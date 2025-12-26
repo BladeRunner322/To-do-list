@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
@@ -10,6 +11,12 @@ import (
 
 func main() {
 	fmt.Println("Список дел. Введите help для списка команд")
+
+	// Загружаем задачи из файла
+	err := loadTasks()
+	if err != nil {
+		log.Fatal("Ошибка загрузки данных:", err)
+	}
 
 	// Используем bufio для более надежной работы с вводом
 	reader := bufio.NewReader(os.Stdin)
@@ -74,17 +81,32 @@ func main() {
 
 		case "help":
 			fmt.Println("Команды:")
-			fmt.Println("  add <название> <дата> - добавить задачу")
-			fmt.Println("  delete <id> - удалить задачу")
-			fmt.Println("  show <дата> - показать задачи")
-			fmt.Println("  complete <id> - отметить задачу как выполненную")
+			fmt.Println("  add <название> <дата> - Добавить задачу")
+			fmt.Println("  delete <id> - Удалить задачу")
+			fmt.Println("  show <дата> - Показать задачи")
+			fmt.Println("  complete <id> - Отметить задачу как выполненную")
+			fmt.Println("  exit - Выйти")
+			fmt.Println("  save - Сохранить")
 			fmt.Println("  Примечание: Формат даты вводить вида Год-Месяц-День")
 
-		case "exit":
-			fmt.Println("=ЧАО ПОКА!")
-			time.Sleep(3 * time.Second) // Задержка в 3 секунды
-			return
+		case "save":
+			err := saveTasks()
+			if err != nil {
+				fmt.Println("Ошибка сохранения:", err)
+			} else {
+				fmt.Println("Задачи сохранены в", dataFile)
+			}
 
+		case "exit":
+			// Сохраняем перед выходом
+			err := saveTasks()
+			if err != nil {
+				fmt.Println("Ошибка сохранения при выходе:", err)
+			} else {
+				fmt.Println("Данные сохранены. До свидания!")
+			}
+			time.Sleep(3 * time.Second)
+			return
 		default:
 			fmt.Println("Неизвестная команда. Введите help для списка команд")
 		}

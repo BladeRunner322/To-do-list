@@ -25,24 +25,40 @@ func AddTask(title string, dateStr string) {
 		Completed: false,
 	})
 	fmt.Println("Задача добавлена!")
+
+	err := saveTasks()
+	if err != nil {
+		fmt.Println("Ошибка сохранения:", err)
+	}
 }
 
 // Удаление задачи
 func DeleteTask(idStr string) {
 	id, _ := strconv.Atoi(idStr)
-	// Создает срез newTasks
 	var newTasks []Task
-	// Перебирает срез tasks, если ID (ID ранее созданной задачи)
-	// не совпадает с id (id Указанный агрументом функции DeleteTask),
-	// записывает в newTasks задачу
+
+	// Фильтруем удаляемую задачу
 	for _, task := range tasks {
 		if task.ID != id {
 			newTasks = append(newTasks, task)
 		}
 	}
-	// Заменяет элементы изначального среза tasks на элементы нового среза newTasks
+
+	// Переприсваиваем ID всем оставшимся задачам
+	for i, task := range newTasks {
+		task.ID = i + 1 // ID начинается с 1
+		newTasks[i] = task
+	}
+
 	tasks = newTasks
+	currentID = len(tasks) // Обновляем currentID до текущего количества задач
 	fmt.Println("Задача удалена!")
+
+	// Сохраняем
+	err := saveTasks()
+	if err != nil {
+		fmt.Println("Ошибка сохранения:", err)
+	}
 }
 
 // Вывод задач по дате
@@ -74,7 +90,11 @@ func CompleteTask(idStr string) {
 		if task.ID == id {
 			tasks[i].Completed = true
 			fmt.Println("Задача отмечена как выполненная!")
-			// Завершает функцию, т.к. задача уже найдена
+
+			err := saveTasks()
+			if err != nil {
+				fmt.Println("Ошибка сохранения:", err)
+			}
 			return
 		}
 	}
